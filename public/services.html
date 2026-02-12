@@ -475,9 +475,10 @@
                     <h5 class="footer__heading">Stay Updated</h5>
                     <p class="text-sm color-secondary mb-md">Get
                         insights and tips delivered to your inbox.</p>
-                    <form class="footer__newsletter" aria-label="Newsletter signup">
+                    <form class="footer__newsletter" name="newsletter" method="POST" data-netlify="true"
+                        aria-label="Newsletter signup">
                         <label for="newsletter-email-svc" class="skip-link">Email address</label>
-                        <input type="email" id="newsletter-email-svc" class="footer__newsletter-input"
+                        <input type="email" id="newsletter-email-svc" name="email" class="footer__newsletter-input"
                             placeholder="Your email" required>
                         <button type="submit" class="footer__newsletter-btn">Join</button>
                     </form>

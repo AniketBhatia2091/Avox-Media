@@ -148,6 +148,23 @@
         }
       });
 
+      // Validating Phone Number specifically
+      var phoneInput = form.querySelector('#contact-phone');
+      if (phoneInput && phoneInput.value.trim()) {
+        var phoneGroup = phoneInput.closest('.form__group');
+        // Allows +, -, space, and digits. Must be between 7 and 15 chars.
+        // Also rejects if it contains letters (which the user specifically complained about)
+        var phoneRegex = /^[+]?[0-9\s-]{7,15}$/;
+        var hasLetters = /[a-zA-Z]/.test(phoneInput.value);
+
+        if (hasLetters || !phoneRegex.test(phoneInput.value.trim())) {
+          phoneGroup.classList.add('form__group--error');
+          valid = false;
+        } else {
+          phoneGroup.classList.remove('form__group--error');
+        }
+      }
+
       if (!valid) return;
 
       var btn = form.querySelector('.btn');
@@ -156,22 +173,16 @@
       btn.disabled = true;
       btn.style.opacity = '0.7';
 
-      var payload = {
-        name: (form.querySelector('#contact-name') || {}).value || '',
-        email: (form.querySelector('#contact-email') || {}).value || '',
-        phone: (form.querySelector('#contact-phone') || {}).value || '',
-        company: (form.querySelector('#contact-company') || {}).value || '',
-        message: (form.querySelector('#contact-message') || {}).value || '',
-      };
+      var formData = new FormData(form);
+      var payload = new URLSearchParams(formData).toString();
 
-      fetch('/api/contact', {
+      fetch('/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload,
       })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data.success) {
+        .then(function (res) {
+          if (res.ok) {
             btn.textContent = '✓ Message sent!';
             btn.style.background = 'var(--success)';
             btn.style.opacity = '1';
@@ -182,14 +193,7 @@
               form.reset();
             }, 3000);
           } else {
-            btn.textContent = data.error || 'Something went wrong';
-            btn.style.background = '#ef4444';
-            btn.style.opacity = '1';
-            setTimeout(function () {
-              btn.innerHTML = originalHTML;
-              btn.style.background = '';
-              btn.disabled = false;
-            }, 3000);
+            throw new Error('Form submission failed');
           }
         })
         .catch(function () {
@@ -228,18 +232,20 @@
         btn.textContent = '...';
         btn.disabled = true;
 
-        fetch('/api/newsletter', {
+        var formData = new FormData(form);
+        var payload = new URLSearchParams(formData).toString();
+
+        fetch('/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: payload,
         })
-          .then(function (res) { return res.json(); })
-          .then(function (data) {
-            if (data.success) {
+          .then(function (res) {
+            if (res.ok) {
               btn.textContent = '✓';
               btn.style.background = 'var(--success)';
               input.value = '';
-              input.placeholder = data.message;
+              input.placeholder = 'Thanks for subscribing!';
               setTimeout(function () {
                 btn.textContent = originalText;
                 btn.style.background = '';
@@ -247,13 +253,7 @@
                 input.placeholder = 'Your email';
               }, 3000);
             } else {
-              btn.textContent = '✗';
-              btn.style.background = '#ef4444';
-              setTimeout(function () {
-                btn.textContent = originalText;
-                btn.style.background = '';
-                btn.disabled = false;
-              }, 2000);
+              throw new Error('Subscription failed');
             }
           })
           .catch(function () {

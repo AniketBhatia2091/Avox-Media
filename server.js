@@ -30,6 +30,7 @@ app.use(compression());
 
 /* --- Body Parser --- */
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Handle form submissions
 
 /* --- Static Files --- */
 app.use(
@@ -39,92 +40,61 @@ app.use(
     })
 );
 
-/* --- Clean URL Routes --- */
-app.get('/', (_req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+/* --- Netlify Form Simulation (Localhost Only) --- */
+app.post('/', (req, res) => {
+    const formName = req.body['form-name'];
+
+    if (formName === 'contact') {
+        const { name, email, phone, company, message } = req.body;
+        console.log(`\n  📩  [Local Form Test] New Contact:`);
+        console.log(`      Name: ${name}`);
+        console.log(`      Email: ${email}`);
+        console.log(`      Message: ${message}\n`);
+
+        // Save to file like before for local records
+        const filePath = path.join(DATA_DIR, 'contacts.json');
+        let contacts = [];
+        try {
+            if (fs.existsSync(filePath)) contacts = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        } catch (_) { }
+
+        contacts.push({ id: Date.now(), ...req.body, submittedAt: new Date().toISOString() });
+        fs.writeFileSync(filePath, JSON.stringify(contacts, null, 2));
+
+        return res.status(200).send('Form submission simulated successfully');
+    }
+
+    if (formName === 'newsletter') {
+        const { email } = req.body;
+        console.log(`\n  📬  [Local Form Test] New Subscriber: ${email}\n`);
+
+        const filePath = path.join(DATA_DIR, 'subscribers.json');
+        let subscribers = [];
+        try {
+            if (fs.existsSync(filePath)) subscribers = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        } catch (_) { }
+
+        subscribers.push({ email, subscribedAt: new Date().toISOString() });
+        fs.writeFileSync(filePath, JSON.stringify(subscribers, null, 2));
+
+        return res.status(200).send('Subscription simulated successfully');
+    }
+
+    res.status(404).send('Unknown form');
 });
 
-app.get('/services', (_req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'services.html'));
-});
-
-app.get('/contact', (_req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'contact.html'));
-});
-
-/* --- API: Contact Form --- */
+/* --- Legacy API Routes (Deprecated) --- */
+/*
 app.post('/api/contact', (req, res) => {
-    const { name, email, phone, company, message } = req.body;
-
-    if (!name || !email || !message) {
-        return res.status(400).json({ error: 'Name, email, and message are required.' });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Please provide a valid email address.' });
-    }
-
-    const entry = {
-        id: Date.now(),
-        name: name.trim(),
-        email: email.trim(),
-        phone: (phone || '').trim(),
-        company: (company || '').trim(),
-        message: message.trim(),
-        submittedAt: new Date().toISOString(),
-    };
-
-    const filePath = path.join(DATA_DIR, 'contacts.json');
-    let contacts = [];
-    try {
-        if (fs.existsSync(filePath)) {
-            contacts = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        }
-    } catch (_) { /* start fresh if corrupted */ }
-
-    contacts.push(entry);
-    fs.writeFileSync(filePath, JSON.stringify(contacts, null, 2));
-
-    console.log(`  📩  New contact from ${entry.name} <${entry.email}>`);
-    res.json({ success: true, message: 'Your message has been received. We\'ll get back to you within 24 hours!' });
+    // ... legacy logic ...
+    res.status(410).json({ error: 'Endpoint deprecated. submitting to /' });
 });
 
-/* --- API: Newsletter Signup --- */
 app.post('/api/newsletter', (req, res) => {
-    const { email } = req.body;
-
-    if (!email) {
-        return res.status(400).json({ error: 'Email is required.' });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Please provide a valid email address.' });
-    }
-
-    const filePath = path.join(DATA_DIR, 'subscribers.json');
-    let subscribers = [];
-    try {
-        if (fs.existsSync(filePath)) {
-            subscribers = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        }
-    } catch (_) { /* start fresh if corrupted */ }
-
-    if (subscribers.some(s => s.email === email.trim())) {
-        return res.json({ success: true, message: 'You\'re already subscribed!' });
-    }
-
-    subscribers.push({
-        email: email.trim(),
-        subscribedAt: new Date().toISOString(),
-    });
-    fs.writeFileSync(filePath, JSON.stringify(subscribers, null, 2));
-
-    console.log(`  📬  New subscriber: ${email.trim()}`);
-    res.json({ success: true, message: 'You\'re in! Thanks for subscribing.' });
+    // ... legacy logic ...
+    res.status(410).json({ error: 'Endpoint deprecated. submitting to /' });
 });
-
+*/
 /* --- 404 Handler --- */
 app.use((_req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
