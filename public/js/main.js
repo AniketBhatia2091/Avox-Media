@@ -117,7 +117,7 @@
     });
   }
 
-  // --- Contact Form Validation ---
+  // --- Contact Form Submission ---
   function initFormValidation() {
     var form = document.querySelector('.form');
     if (!form) return;
@@ -148,17 +148,124 @@
         }
       });
 
-      if (valid) {
-        var btn = form.querySelector('.btn');
+      if (!valid) return;
+
+      var btn = form.querySelector('.btn');
+      var originalHTML = btn.innerHTML;
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+
+      var payload = {
+        name: (form.querySelector('#contact-name') || {}).value || '',
+        email: (form.querySelector('#contact-email') || {}).value || '',
+        phone: (form.querySelector('#contact-phone') || {}).value || '',
+        company: (form.querySelector('#contact-company') || {}).value || '',
+        message: (form.querySelector('#contact-message') || {}).value || '',
+      };
+
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.success) {
+            btn.textContent = '✓ Message sent!';
+            btn.style.background = 'var(--success)';
+            btn.style.opacity = '1';
+            setTimeout(function () {
+              btn.innerHTML = originalHTML;
+              btn.style.background = '';
+              btn.disabled = false;
+              form.reset();
+            }, 3000);
+          } else {
+            btn.textContent = data.error || 'Something went wrong';
+            btn.style.background = '#ef4444';
+            btn.style.opacity = '1';
+            setTimeout(function () {
+              btn.innerHTML = originalHTML;
+              btn.style.background = '';
+              btn.disabled = false;
+            }, 3000);
+          }
+        })
+        .catch(function () {
+          btn.textContent = 'Network error — try again';
+          btn.style.background = '#ef4444';
+          btn.style.opacity = '1';
+          setTimeout(function () {
+            btn.innerHTML = originalHTML;
+            btn.style.background = '';
+            btn.disabled = false;
+          }, 3000);
+        });
+    });
+  }
+
+  // --- Newsletter Signup ---
+  function initNewsletter() {
+    document.querySelectorAll('.footer__newsletter').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        var input = form.querySelector('.footer__newsletter-input');
+        var btn = form.querySelector('.footer__newsletter-btn');
+        var email = input.value.trim();
+
+        if (!email) return;
+
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          input.style.borderColor = '#ef4444';
+          setTimeout(function () { input.style.borderColor = ''; }, 2000);
+          return;
+        }
+
         var originalText = btn.textContent;
-        btn.textContent = 'Message sent!';
-        btn.style.background = 'var(--success)';
-        setTimeout(function () {
-          btn.textContent = originalText;
-          btn.style.background = '';
-          form.reset();
-        }, 3000);
-      }
+        btn.textContent = '...';
+        btn.disabled = true;
+
+        fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email }),
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.success) {
+              btn.textContent = '✓';
+              btn.style.background = 'var(--success)';
+              input.value = '';
+              input.placeholder = data.message;
+              setTimeout(function () {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.disabled = false;
+                input.placeholder = 'Your email';
+              }, 3000);
+            } else {
+              btn.textContent = '✗';
+              btn.style.background = '#ef4444';
+              setTimeout(function () {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.disabled = false;
+              }, 2000);
+            }
+          })
+          .catch(function () {
+            btn.textContent = '✗';
+            btn.style.background = '#ef4444';
+            setTimeout(function () {
+              btn.textContent = originalText;
+              btn.style.background = '';
+              btn.disabled = false;
+            }, 2000);
+          });
+      });
     });
   }
 
@@ -182,6 +289,7 @@
     initRevealAnimations();
     initAccordion();
     initFormValidation();
+    initNewsletter();
     initActiveNav();
   }
 
@@ -192,3 +300,4 @@
   }
 
 })();
+
