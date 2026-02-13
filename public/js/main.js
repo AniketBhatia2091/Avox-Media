@@ -280,6 +280,55 @@
     });
   }
 
+  // --- Dynamic Cursor Glow ---
+  function initCursorGlow() {
+    var glow = document.createElement('div');
+    glow.classList.add('cursor-glow');
+    document.body.appendChild(glow);
+
+    var mouseX = 0;
+    var mouseY = 0;
+    var glowX = 0;
+    var glowY = 0;
+
+    document.addEventListener('mousemove', function (e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function animate() {
+      // Smooth lerp
+      glowX += (mouseX - glowX) * 0.1;
+      glowY += (mouseY - glowY) * 0.1;
+
+      glow.style.transform = 'translate(' + (glowX - 300) + 'px, ' + (glowY - 300) + 'px)';
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  }
+
+  // --- Ambient Orbs ---
+  function initAmbientOrbs() {
+    var container = document.createElement('div');
+    container.classList.add('orb-container');
+
+    var orb1 = document.createElement('div');
+    orb1.classList.add('orb', 'orb--1');
+
+    var orb2 = document.createElement('div');
+    orb2.classList.add('orb', 'orb--2');
+
+    var orb3 = document.createElement('div');
+    orb3.classList.add('orb', 'orb--3');
+
+    container.appendChild(orb1);
+    container.appendChild(orb2);
+    container.appendChild(orb3);
+
+    document.body.prepend(container);
+  }
+
   // --- Initialize Everything ---
   function init() {
     initScrollProgress();
@@ -291,6 +340,8 @@
     initFormValidation();
     initNewsletter();
     initActiveNav();
+    initCursorGlow();
+    initAmbientOrbs();
   }
 
   if (document.readyState === 'loading') {
