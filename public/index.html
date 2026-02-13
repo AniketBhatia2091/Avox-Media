@@ -27,6 +27,31 @@
             <div class="preloader-bar"></div>
         </div>
     </div>
+    <script>
+        // Preloader Logic:
+        // 1. If Reload (Refresh): Clear session to force preloader to show.
+        // 2. If Internal Navigation (Home Click): Hide preloader if already visited.
+        (function () {
+            var isReload = false;
+            try {
+                if (window.performance) {
+                    var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+                    if (nav && nav.type === 'reload') isReload = true;
+                    // Fallback for older browsers
+                    else if (performance.navigation && performance.navigation.type === 1) isReload = true;
+                }
+            } catch (e) { }
+
+            if (isReload) {
+                // User manually refreshed: Clear session so they see the preloader again
+                sessionStorage.removeItem('apex_visited');
+            } else if (sessionStorage.getItem('apex_visited')) {
+                // Internal navigation: Hide preloader immediately
+                var p = document.getElementById('preloader');
+                if (p) p.style.display = 'none';
+            }
+        })();
+    </script>
     <a href="#main" class="skip-link">Skip to main content</a>
     <div class="scroll-progress" aria-hidden="true"></div>
 
@@ -261,25 +286,26 @@
                 </div>
                 <div class="grid grid--3">
                     <div class="team-card reveal">
-                        <div class="team-card__avatar" aria-hidden="true">AB</div>
-                        <h4 class="team-card__name">Aniket Bhatia</h4>
+                        <img src="img/Ajeet Pratap Singh.jpeg" alt="Ajeet Pratap Singh" class="team-card__avatar">
+                        <h4 class="team-card__name">Ajeet Pratap Singh</h4>
                         <p class="team-card__role">Founder & Creative Director</p>
                         <p class="team-card__bio">Drives the creative vision and ensures every project aligns with
                             client goals and market trends.</p>
                     </div>
                     <div class="team-card reveal reveal--delay-1">
-                        <div class="team-card__avatar" aria-hidden="true">RK</div>
-                        <h4 class="team-card__name">Rohan Kapoor</h4>
-                        <p class="team-card__role">Lead Developer</p>
-                        <p class="team-card__bio">Turns designs into performant, accessible digital experiences with
-                            clean, maintainable code.</p>
-                    </div>
-                    <div class="team-card reveal reveal--delay-2">
-                        <div class="team-card__avatar" aria-hidden="true">PS</div>
-                        <h4 class="team-card__name">Priya Sharma</h4>
+                        <img src="img/Shagun Som.jpeg" alt="Shagun Som" class="team-card__avatar">
+                        <h4 class="team-card__name">Shagun Som</h4>
                         <p class="team-card__role">Marketing Strategist</p>
                         <p class="team-card__bio">Designs data-backed campaigns that connect with the right audience at
                             the right time.</p>
+                    </div>
+                    <div class="team-card reveal reveal--delay-2">
+                        <img src="img/aniket.jpg" alt="Aniket Bhatia" class="team-card__avatar"
+                            style="object-position: bottom;">
+                        <h4 class="team-card__name">Aniket Bhatia</h4>
+                        <p class="team-card__role">Lead Developer</p>
+                        <p class="team-card__bio">Turns designs into performant, accessible digital experiences with
+                            clean, maintainable code.</p>
                     </div>
                 </div>
             </div>

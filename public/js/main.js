@@ -331,18 +331,31 @@
 
   // --- Preloader ---
   function initPreloader() {
+    // Always mark as visited for this session, regardless of page
+    const visited = sessionStorage.getItem('apex_visited');
+    sessionStorage.setItem('apex_visited', 'true');
+
     const preloader = document.getElementById('preloader');
     if (!preloader) return;
+
+    // Check if user has already visited in this session
+    if (visited) {
+      preloader.style.display = 'none';
+      return;
+    }
+
+    // Mark as visited for this session
+    sessionStorage.setItem('apex_visited', 'true');
 
     // Minimum display time for the animation (1.5s)
     const minTime = 1500;
     const startTime = Date.now();
 
-    window.addEventListener('load', () => {
+    window.addEventListener('load', function () {
       const elapsedTime = Date.now() - startTime;
       const remainingTime = Math.max(0, minTime - elapsedTime);
 
-      setTimeout(() => {
+      setTimeout(function () {
         preloader.classList.add('preloader--hidden');
       }, remainingTime);
     });
