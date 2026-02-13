@@ -329,6 +329,25 @@
     document.body.prepend(container);
   }
 
+  // --- Preloader ---
+  function initPreloader() {
+    const preloader = document.getElementById('preloader');
+    if (!preloader) return;
+
+    // Minimum display time for the animation (1.5s)
+    const minTime = 1500;
+    const startTime = Date.now();
+
+    window.addEventListener('load', () => {
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, minTime - elapsedTime);
+
+      setTimeout(() => {
+        preloader.classList.add('preloader--hidden');
+      }, remainingTime);
+    });
+  }
+
   // --- Initialize Everything ---
   function init() {
     initScrollProgress();
@@ -342,6 +361,7 @@
     initActiveNav();
     initCursorGlow();
     initAmbientOrbs();
+    initPreloader();
   }
 
   if (document.readyState === 'loading') {
